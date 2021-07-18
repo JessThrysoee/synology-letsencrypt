@@ -52,7 +52,6 @@ fi
 /usr/local/bin/lego \
     --accept-tos \
     --key-type "rsa4096" \
-    --server "https://acme-staging-v02.api.letsencrypt.org/directory" \
     --email "$EMAIL" \
     --dns "$DNS_PROVIDER" \
     "${DOMAINS[@]}" \
