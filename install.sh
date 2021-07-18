@@ -28,9 +28,7 @@ install_reload_services() {
 }
 
 
-install() {
-  install_lego
-  install_reload_services
-}
+install_lego
+install_reload_services
 
 }
