@@ -1,6 +1,3 @@
-
-
-
 ### Install & Update Script
 
 To **install** or **update** synology-letsencrypt, you should run the [install script](install.sh). To do that, you may either download and run the script manually, or use the following cURL command:
@@ -14,13 +11,12 @@ To **install** or **update** synology-letsencrypt, you should run the [install s
 
 `$HOME/.lego/env`
 
-```
+```sh
 DOMAINs=(--domains "example.com" --domains "*.example.com")
 EMAIL="user@example.com"
 
 # The certificate key from /usr/syno/etc/certificate/_archive/INFO
-#CERT_ID="NEictI"
-CERT_ID="z0KhbS"
+CERT_ID="z0LhbS"
 
 # https://go-acme.github.io/lego/dns/simply/
 # Specify DNS Provider (this example is from https://go-acme.github.io/lego/dns/simply/)
