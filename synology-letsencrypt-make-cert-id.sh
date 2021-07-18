@@ -5,7 +5,7 @@
 archive_path="/usr/syno/etc/certificate/_archive"
 info="$archive_path/INFO"
 
-mkdir -p archive_path
+mkdir -p "$archive_path"
 cert_path=$(mktemp -d $archive_path/XXXXXX)
 cert_id="${cert_path##*/}"
 
