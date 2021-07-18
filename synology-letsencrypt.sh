@@ -12,7 +12,10 @@ hook_path="$LEGO_PATH/hook"
 
 ## cert_id
 cert_id_path="$cert_path/$cert_domain.cert_id"
-[[ ! -s $cert_id_path ]] && /usr/local/bin/synology-letsencrypt-make-cert-id.sh > "$cert_id_path"
+if [[ ! -s $cert_id_path ]]; then
+	mkdir -p "$cert_path"
+	/usr/local/bin/synology-letsencrypt-make-cert-id.sh > "$cert_id_path"
+fi
 source $cert_id_path
 
 
