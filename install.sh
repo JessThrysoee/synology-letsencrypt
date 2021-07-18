@@ -2,6 +2,15 @@
 
 {
 
+own() {
+  local path="$1"
+
+  chown root:root "$path"
+  chmod 755 "$path"
+
+  printf "installed: %s\n" "$path"
+}
+
 install_lego() {
   local path="/usr/local/bin/lego"
 
@@ -10,25 +19,20 @@ install_lego() {
     | xargs curl -sSL \
     | sudo tar -zx -C "${path%/*}" -- "${path##*/}"
 
-  chown root:root "$path"
-  chmod 755 "$path"
-
-  printf "installed: %s\n" "$path"
+  own "$path"
 }
 
-install_reload_services() {
-  local path="/usr/local/bin/synology-letsencrypt-reload-services.sh"
+install_script() {
+  local name="$1"
+  local path="/usr/local/bin/$name"
 
-  sudo curl -sSL -o "$path" "https://raw.githubusercontent.com/JessThrysoee/synology-letsencrypt/master/synology-letsencrypt-reload-services.sh"
+  sudo curl -sSL -o "$path" "https://raw.githubusercontent.com/JessThrysoee/synology-letsencrypt/master/$name"
 
-  chown root:root "$path"
-  chmod 755 "$path"
-
-  printf "installed: %s\n" "$path"
+  own "$path"
 }
-
 
 install_lego
-install_reload_services
+install_script "synology-letsencrypt-reload-services.sh"
+install_script "synology-letsencrypt-make-cert-id.sh"
 
 }
