@@ -9,7 +9,7 @@ To **install** or **update** synology-letsencrypt, you should run the [install s
 
 ### Configuration
 
-`$HOME/.lego/env`
+An example of a configuration, `$HOME/.lego/env`.
 
 ```sh
 DOMAINs=(--domains "example.com" --domains "*.example.com")
@@ -26,5 +26,8 @@ export SIMPLY_API_KEY=XXXXXXXXXX
 export SIMPLY_PROPAGATION_TIMEOUT=1800
 export SIMPLY_POLLING_INTERVAL=30
 
-# vim: set ft=sh: */
+# vim: set ft=sh:
 ```
+
+
+
