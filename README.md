@@ -11,7 +11,7 @@ To **install** or **update** synology-letsencrypt, you should run the [install s
 
 An example of a configuration, `$HOME/.lego/env`.
 
-```sh
+```
 DOMAINs=(--domains "example.com" --domains "*.example.com")
 EMAIL="user@example.com"
 
