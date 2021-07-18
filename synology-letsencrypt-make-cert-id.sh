@@ -13,10 +13,10 @@ if [[ -s $info ]]; then
     # append
     tmp_info=$(mktemp)
     jq --arg cert_id "$cert_id" '.[$cert_id] = { desc: "", services: [] }' < "$info" > "$tmp_info" \
-    && \mv "$tmp_info" "$info"
+        && \mv "$tmp_info" "$info"
 else
-    # create
-    jq -n --arg cert_id "$cert_id" '{ ($cert_id) : { desc: "", services: [] } }' > $info
+  # create
+  jq -n --arg cert_id "$cert_id" '{ ($cert_id) : { desc: "", services: [] } }' > $info
 fi
 
-echo "CERT_ID=$cert_id"
+echo "cert_id=$cert_id"
