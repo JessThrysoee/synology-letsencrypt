@@ -6,8 +6,8 @@ permissions() {
     local mod="$1"
     local path="$2"
 
-    chown root:root "$path"
-    chmod "$mod" "$path"
+    sudo chown root:root "$path"
+    sudo chmod "$mod" "$path"
 }
 
 install_lego() {
@@ -37,11 +37,11 @@ install_configuration() {
     local dir="/root/.lego"
     local env="$dir/env"
 
-    mkdir -p "$dir"
+    sudo mkdir -p "$dir"
     permissions 700 "$dir"
 
     if [[ ! -s $env ]]; then
-        cat > "$env" <<EOF
+        sudo tee "$env" > /dev/null <<EOF
 DOMAINS=(--domains "example.com" --domains "*.example.com")
 EMAIL="user@example.com"
 
@@ -59,10 +59,13 @@ EOF
 }
 
 
-install_lego
-install_script "synology-letsencrypt.sh"
-install_script "synology-letsencrypt-reload-services.sh"
-install_script "synology-letsencrypt-make-cert-id.sh"
-sudo install_configuration
+install() {
+    install_lego
+    install_script "synology-letsencrypt.sh"
+    install_script "synology-letsencrypt-reload-services.sh"
+    install_script "synology-letsencrypt-make-cert-id.sh"
+    install_configuration
+}
 
+install
 }

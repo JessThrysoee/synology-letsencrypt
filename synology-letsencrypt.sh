@@ -3,14 +3,7 @@
 [[ $EUID == 0 ]] || { echo >&2 "This script must be run as root"; exit 1; }
 
 export LEGO_PATH="$HOME/.lego"
-mkdir -p "$LEGO_PATH"
-
-env="$LEGO_PATH/env"
-if [[ ! -s $env ]]; then
-    echo >&2 "Missing configuration $env: See example at https://github.com/JessThrysoee/synology-letsencrypt#configuration"
-else
-    source "$env"
-fi
+source "$LEGO_PATH/env"
 
 cert_path="$LEGO_PATH/certificates"
 cert_domain="${DOMAINS[1]#\*.}"
@@ -21,7 +14,6 @@ hook_path="$LEGO_PATH/hook"
 cert_id_path="$cert_path/$cert_domain.cert_id"
 [[ ! -s $cert_id_path ]] && /usr/local/bin/synology-letsencrypt-make-cert-id.sh > "$cert_id_path"
 source $cert_id_path
-echo $cert_id_path
 
 
 ## install hook
