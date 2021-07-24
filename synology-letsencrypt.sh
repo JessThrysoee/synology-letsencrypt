@@ -6,15 +6,15 @@ export LEGO_PATH="$HOME/.lego"
 source "$LEGO_PATH/env"
 
 cert_path="$LEGO_PATH/certificates"
-cert_domain="${DOMAINS[1]#\*.}"
+cert_domain="${DOMAINS[0]#\*.}"
 hook_path="$LEGO_PATH/hook"
 
 
 ## cert_id
 cert_id_path="$cert_path/$cert_domain.cert_id"
 if [[ ! -s $cert_id_path ]]; then
-	mkdir -p "$cert_path"
-	/usr/local/bin/synology-letsencrypt-make-cert-id.sh > "$cert_id_path"
+    mkdir -p "$cert_path"
+    /usr/local/bin/synology-letsencrypt-make-cert-id.sh > "$cert_id_path"
 fi
 source $cert_id_path
 
