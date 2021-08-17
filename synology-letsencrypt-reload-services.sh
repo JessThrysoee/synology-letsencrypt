@@ -7,6 +7,7 @@ cert_id="$1"
 
 archive_path="/usr/syno/etc/certificate/_archive"
 INFO="$archive_path/INFO"
+tls_profile_path="/usr/libexec/security-profile/tls-profile"
 
 get() { jq -r --arg cert_id "$cert_id" --arg i "$i" --arg prop "$1" '.[$cert_id].services[$i|tonumber][$prop]' "$INFO" ; }
 
@@ -24,6 +25,14 @@ for (( i = 0; i < services_length; i++ )); do
     else
         exec_path="/usr/libexec/certificate.d/$subscriber"
         cert_path="/usr/syno/etc/certificate/$subscriber/$service"
+
+        if [[ -x $tls_profile_path/${subscriber}.sh ]]; then
+            exec_path="$tls_profile_path/${subscriber}.sh"
+        fi
+
+        if [[ $subscriber == "system" && $service == "default" && -x $tls_profile_path/dsm.sh ]]; then
+            exec_path="$tls_profile_path/dsm.sh"
+        fi
     fi
 
     if ! diff -q "$archive_path/$cert_id/cert.pem" "$cert_path/cert.pem" >/dev/null; then
@@ -35,4 +44,3 @@ for (( i = 0; i < services_length; i++ )); do
     fi
 
 done
-

@@ -16,7 +16,7 @@ if [[ ! -s $cert_id_path ]]; then
     mkdir -p "$cert_path"
     /usr/local/bin/synology-letsencrypt-make-cert-id.sh > "$cert_id_path"
 fi
-source $cert_id_path
+source "$cert_id_path"
 
 
 ## install hook
