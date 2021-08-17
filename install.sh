@@ -34,7 +34,7 @@ install_script() {
 
 
 install_configuration() {
-    local dir="/root/.lego"
+    local dir="/usr/local/etc/synology-letsencrypt"
     local env="$dir/env"
 
     sudo mkdir -p "$dir"

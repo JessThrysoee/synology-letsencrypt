@@ -6,10 +6,9 @@ To **install** or **update** synology-letsencrypt, you should run the [install s
 curl -sSL https://raw.githubusercontent.com/JessThrysoee/synology-letsencrypt/master/install.sh | bash
 ```
 
-
 ### Configuration
 
-An example of a configuration, `$HOME/.lego/env`.
+An example of a configuration, `/usr/local/etc/synology-letsencrypt/env`.
 
 ```sh
 DOMAINS=(--domains "example.com" --domains "*.example.com")
@@ -22,8 +21,3 @@ export SIMPLY_API_KEY=XXXXXXXXXX
 export SIMPLY_PROPAGATION_TIMEOUT=1800
 export SIMPLY_POLLING_INTERVAL=30
 ```
-
-
-
-
-

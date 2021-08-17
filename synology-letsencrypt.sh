@@ -2,7 +2,7 @@
 
 [[ $EUID == 0 ]] || { echo >&2 "This script must be run as root"; exit 1; }
 
-export LEGO_PATH="$HOME/.lego"
+export LEGO_PATH="/usr/local/etc/synology-letsencrypt"
 source "$LEGO_PATH/env"
 
 cert_path="$LEGO_PATH/certificates"
