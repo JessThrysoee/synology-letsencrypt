@@ -6,7 +6,7 @@ export LEGO_PATH="/usr/local/etc/synology-letsencrypt"
 source "$LEGO_PATH/env"
 
 cert_path="$LEGO_PATH/certificates"
-cert_domain="${DOMAINS[0]#\*.}"
+cert_domain="${DOMAINS[1]#\*.}"
 hook_path="$LEGO_PATH/hook"
 
 

@@ -27,7 +27,7 @@ for (( i = 0; i < services_length; i++ )); do
     fi
 
     if ! diff -q "$archive_path/$cert_id/cert.pem" "$cert_path/cert.pem" >/dev/null; then
-        \cp "$archive_path/$cert_id/"{cert,chain,fullchain,privkey}.pem "$cert_path/"
+        cp "$archive_path/$cert_id/"{cert,chain,fullchain,privkey}.pem "$cert_path/"
 
         if [[ -x $exec_path ]]; then
             if [[ $subscriber == "system" && $service == "default" ]]; then "$exec_path" else "$exec_path" "$service"; fi
