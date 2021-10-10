@@ -2,7 +2,7 @@
 
 Create and maintain a [Let's Encrypt](https://letsencrypt.org/) certificate on a Synology NAS.
 
-Uses [lego](https://go-acme.github.io/lego/) for the ACME challenge over DNS (dns-01) for any of the supported [DNS Providers](https://go-acme.github.io/lego/dns/).
+Uses [lego](https://go-acme.github.io/lego/) and the [ACME DNS-01 challenge](https://letsencrypt.org/docs/challenge-types/#dns-01-challenge) for any of the supported [DNS Providers](https://go-acme.github.io/lego/dns/).
 
 ## Install & Update Script
 
