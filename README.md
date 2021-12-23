@@ -36,3 +36,11 @@ To schedule a daily task, log into the Synology DSM and add a user-defined scrip
        Create -> Scheduled Task -> User-defined script
           General -> User = root
           Task Settings -> User-defined script = /usr/local/bin/synology-letsencrypt.sh
+
+## Uninstall
+
+To **uninstall** synology-letsencrypt, run the [uninstall script](uninstall.sh). To do that, either download and run the script manually, or use the following cURL command:
+
+```sh
+curl -sSL https://raw.githubusercontent.com/JessThrysoee/synology-letsencrypt/master/uninstall.sh | bash
+```
