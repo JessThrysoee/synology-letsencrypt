@@ -21,6 +21,9 @@ source "$cert_id_path"
 
 ## install hook
 archive_path="/usr/syno/etc/certificate/_archive/$cert_id"
+if [[ ! -d $archive_path ]]; then
+    mkdir -p "$archive_path"
+fi
 
 cat > "$hook_path" <<EOF
 #!/bin/bash
