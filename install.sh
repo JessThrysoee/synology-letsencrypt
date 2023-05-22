@@ -2,6 +2,21 @@
 
 {
 
+while getopts ":a:h" opt; do
+  case $opt in
+    a) ARCH="$OPTARG";;
+    h) echo "Usage: $0 [-a <arch>]"
+       echo "  -a <arch>  Architecture of lego to install (default: $(dpkg --print-architecture))"
+       exit 0
+    ;;
+    :) echo "Error: -${OPTARG} requires an argument.";;
+    \?) echo "Invalid option -$OPTARG" >&2
+    ;;
+  esac
+done
+
+ARCH=${ARCH:-$(dpkg --print-architecture)}
+
 permissions() {
     local mod="$1"
     local path="$2"
@@ -12,10 +27,19 @@ permissions() {
 
 install_lego() {
     local path="/usr/local/bin/lego"
+    local url
+    
+    url="$(
+        curl -sSL "https://api.github.com/repos/go-acme/lego/releases/latest" \
+        | jq --unbuffered -r --arg arch "$ARCH" '.assets[].browser_download_url | select(.|endswith("linux_\($arch).tar.gz"))'
+    )"
 
-    curl -sSL "https://api.github.com/repos/go-acme/lego/releases/latest" \
-        | jq --unbuffered -r --arg arch "$(dpkg --print-architecture)" '.assets[].browser_download_url | select(.|endswith("linux_\($arch).tar.gz"))' \
-        | xargs curl -sSL \
+    if [[ -z $url ]]; then
+        echo "Could not find lego download URL! Try a different architecture maybe? See '$0 -h'" >&2
+        exit 1
+    fi
+
+    curl -sSL "$url" \
         | sudo tar -zx -C "${path%/*}" -- "${path##*/}"
 
     permissions 755 "$path"
@@ -56,6 +80,12 @@ EOF
 
     permissions 600 "$env"
     printf "installed: %s\n" "$env"
+    
+    cat << EOF
+    All done!
+
+Check $env and edit as needed.
+EOF
 }
 
 
