@@ -41,6 +41,11 @@ for (( i = 0; i < services_length; i++ )); do
         if [[ -x $exec_path ]]; then
             if [[ $subscriber == "system" && $service == "default" ]]; then "$exec_path" else "$exec_path" "$service"; fi
         fi
+
+        if [[ $subscriber == "WebStation" && -f "$cert_path/info" ]]; then
+            synow3tool --sync-cert-repository="$cert_path/info"
+            synow3tool --nginx=reload
+        fi
     fi
 
 done
