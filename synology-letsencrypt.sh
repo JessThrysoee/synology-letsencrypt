@@ -18,26 +18,26 @@ if [[ ! -s $cert_id_path ]]; then
 fi
 source "$cert_id_path"
 
-
-## install hook
+## install hook if necessary
 archive_path="/usr/syno/etc/certificate/_archive/$cert_id"
 if [[ ! -d $archive_path ]]; then
     mkdir -p "$archive_path"
 fi
 
-cat > "$hook_path" <<EOF
-#!/bin/bash
+if [[ ! -x $hook_path ]]; then
+    cat >"$hook_path" <<EOF
+   #!/bin/bash
 
-cp  $cert_path/$cert_domain.crt "$archive_path/cert.pem"
-cp  $cert_path/$cert_domain.issuer.crt "$archive_path/chain.pem"
-cat $cert_path/$cert_domain.crt $cert_path/$cert_domain.issuer.crt > $archive_path/fullchain.pem
-cp  $cert_path/$cert_domain.key $archive_path/privkey.pem
+   cp  $cert_path/$cert_domain.crt "$archive_path/cert.pem"
+   cp  $cert_path/$cert_domain.issuer.crt "$archive_path/chain.pem"
+   cat $cert_path/$cert_domain.crt $cert_path/$cert_domain.issuer.crt > $archive_path/fullchain.pem
+   cp  $cert_path/$cert_domain.key $archive_path/privkey.pem
 
-/usr/local/bin/synology-letsencrypt-reload-services.sh "$cert_id"
+   /usr/local/bin/synology-letsencrypt-reload-services.sh "$cert_id"
 EOF
 
-chmod 700 "$hook_path"
-
+    chmod 700 "$hook_path"
+fi
 
 ## run or renew
 if [[ -s $cert_path/$cert_domain.crt ]]; then
