@@ -1,8 +1,12 @@
 #!/bin/bash -e
 
 [[ $EUID == 0 ]] || { echo >&2 "This script must be run as root"; exit 1; }
+if [[ "${1:-xxx}" == "xxx" ]]; then
+    export LEGO_PATH="/usr/local/etc/synology-letsencrypt"
+else
+    export LEGO_PATH="/usr/local/etc/synology-letsencrypt/${1}"
+fi
 
-export LEGO_PATH="/usr/local/etc/synology-letsencrypt"
 source "$LEGO_PATH/env"
 
 cert_path="$LEGO_PATH/certificates"

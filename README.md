@@ -37,6 +37,24 @@ To schedule a daily task, log into the Synology DSM and add a user-defined scrip
           General -> User = root
           Task Settings -> User-defined script = /usr/local/bin/synology-letsencrypt.sh
 
+### Multiple Certificates
+
+If you need to generate more than one certificate with this, you can parameterize synology-letsencrypt.sh with the name of a certificate configuration:
+
+```shellsession
+$ /usr/local/bin/synology-letsencrypt.sh example.com
+$ /usr/local/bin/synology-letsencrypt.sh other-example.com
+```
+
+This creates an entire configuration in
+`/usr/local/etc/synology-letsencrypt/example.com/env` and
+`/usr/local/etc/synology-letsencrypt/other-example.com/env` respectively, which
+you can tune according to your needs. That extends to modifying the `hook` in
+each one to match your needs.
+
+You might want this if you require more than one certificate on the Synology, or
+if you want to generate a certificate for another host on your Synology.
+
 ## Uninstall
 
 To **uninstall** synology-letsencrypt, run the [uninstall script](uninstall.sh). To do that, either download and run the script manually, or use the following cURL command:
