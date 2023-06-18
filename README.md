@@ -39,11 +39,11 @@ To schedule a daily task, log into the Synology DSM and add a user-defined scrip
 
 ### Multiple Certificates
 
-If you need to generate more than one certificate with this, you can parameterize synology-letsencrypt.sh with the name of a certificate configuration:
+If you need to generate more than one certificate with this, you can parameterize synology-letsencrypt.sh with the path of a certificate configuration:
 
 ```shellsession
-$ /usr/local/bin/synology-letsencrypt.sh example.com
-$ /usr/local/bin/synology-letsencrypt.sh other-example.com
+$ /usr/local/bin/synology-letsencrypt.sh -p /usr/local/bin/synology-letsencrypt/example.com
+$ /usr/local/bin/synology-letsencrypt.sh -p /usr/local/bin/synology-letsencrypt/other-example.com
 ```
 
 This creates an entire configuration in
@@ -54,6 +54,15 @@ each one to match your needs.
 
 You might want this if you require more than one certificate on the Synology, or
 if you want to generate a certificate for another host on your Synology.
+
+### Customizing the hook script
+
+By default, `synology-letsencrypt.sh` will overwrite any changes you make to the
+hook script to preserve the core functionality of this client. If you have customized your script, you can preserve its changes by adding the `-c` parameter to your invocation:
+
+```shellsession
+$ /usr/local/bin/synology-letsencrypt.sh -c
+```
 
 ## Uninstall
 
