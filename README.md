@@ -39,7 +39,7 @@ To schedule a daily task, log into the Synology DSM and add a user-defined scrip
 
 ### Multiple Certificates
 
-If you need to generate more than one certificate with this, you can parameterize synology-letsencrypt.sh with the path of a certificate configuration:
+If you need to generate more than one certificate, you can parameterize synology-letsencrypt.sh with the path of a certificate configuration:
 
 ```shellsession
 $ /usr/local/bin/synology-letsencrypt.sh -p /usr/local/bin/synology-letsencrypt/example.com

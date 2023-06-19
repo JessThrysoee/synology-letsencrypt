@@ -11,7 +11,7 @@ while getopts ":p:ch" opt; do
             exit 0
             ;;
         :) echo "Error: -${OPTARG} requires an argument" >&2 ;;
-        \?) echo "Invalid iotion -$OPTARG" >&2 ;;
+        \?) echo "Invalid option -$OPTARG" >&2 ;;
     esac
 done
 
@@ -71,6 +71,5 @@ fi
     --key-type "rsa4096" \
     --email "$EMAIL" \
     --dns "$DNS_PROVIDER" \
-    --dns.resolvers=8.8.8.8,8.8.4.4 \
     "${DOMAINS[@]}" \
     "${CMD[@]}" "$hook_path"
