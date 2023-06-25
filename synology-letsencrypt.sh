@@ -25,6 +25,8 @@ CREATE_HOOK=${CREATE_HOOK:-true}
 
 source "$LEGO_PATH/env"
 
+export LEGO_PATH
+
 cert_path="$LEGO_PATH/certificates"
 cert_domain="${DOMAINS[1]#\*.}"
 hook_path="$LEGO_PATH/hook"
