@@ -39,7 +39,7 @@ To schedule a daily task, log into the Synology DSM and add a user-defined scrip
     Synology DSM -> Control Panel -> Task Scheduler
        Create -> Scheduled Task -> User-defined script
           General -> User = root
-          Task Settings -> User-defined script = /usr/local/bin/synology-letsencrypt.sh
+          Task Settings -> User-defined script = /bin/bash /usr/local/bin/synology-letsencrypt.sh
 
 ### Multiple Certificates
 
