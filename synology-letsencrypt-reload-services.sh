@@ -37,8 +37,8 @@ for (( i = 0; i < services_length; i++ )); do
         fi
 
         if [[ $subscriber == "WebStation" ]]; then
-		    reload_webstation=1
-			continue
+            reload_webstation=1
+            continue
         fi
     fi
 
@@ -55,5 +55,5 @@ done
 
 if [[ $reload_webstation == 1 ]]; then
     synow3tool --gen-all
-	systemctl reload nginx
+    systemctl reload nginx
 fi
