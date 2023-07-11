@@ -12,6 +12,8 @@ To **install** or **update** synology-letsencrypt, run the [install script](inst
 curl -sSL https://raw.githubusercontent.com/JessThrysoee/synology-letsencrypt/master/install.sh | bash
 ```
 
+The script has to be run as root. To run it as root, you can SSH into your NAS with an admin user and then issue `sudo -i` to become root (the password is the same as the admin user's).
+
 ## Configuration
 
 Update `/usr/local/etc/synology-letsencrypt/env` with domain(s), email, and DNS API-key:
@@ -28,6 +30,8 @@ export SIMPLY_PROPAGATION_TIMEOUT=1800
 export SIMPLY_POLLING_INTERVAL=30
 ```
 
+Note: If you are generating a wildcard certificate, you must include the base domain next to the wildcard domain. For example, if you want to create a certificate for `*.example.com`, you must also include `example.com` in the `DOMAINS` value.
+
 Now you should be able to run `/usr/local/bin/synology-letsencrypt.sh`.
 
 To schedule a daily task, log into the Synology DSM and add a user-defined script:
@@ -35,7 +39,7 @@ To schedule a daily task, log into the Synology DSM and add a user-defined scrip
     Synology DSM -> Control Panel -> Task Scheduler
        Create -> Scheduled Task -> User-defined script
           General -> User = root
-          Task Settings -> User-defined script = /usr/local/bin/synology-letsencrypt.sh
+          Task Settings -> User-defined script = /bin/bash /usr/local/bin/synology-letsencrypt.sh
 
 ### Multiple Certificates
 
