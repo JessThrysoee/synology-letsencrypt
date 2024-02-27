@@ -74,4 +74,5 @@ fi
     --email "$EMAIL" \
     --dns "$DNS_PROVIDER" \
     "${DOMAINS[@]}" \
+    "${LEGO_OPTIONS[@]}" \
     "${CMD[@]}" "$hook_path"
