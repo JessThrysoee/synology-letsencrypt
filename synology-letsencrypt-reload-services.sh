@@ -72,8 +72,19 @@ reload_nginx() {
     fi
 }
 
+reload_package() {
+    local package_name="$1"
+    if [[ -x /usr/syno/bin/synopkg ]]; then
+        if /usr/syno/bin/synopkg status "$package_name" | grep -q '"status":"running"'; then
+            /usr/syno/bin/synopkg restart "$package_name"
+        else
+            echo "Package $package_name is not running" >&2
+        fi
+    else
+        echo "synopkg not found" >&2
+    fi
+}
 
 reload_services
 reload_nginx
-
-
+reload_package DirectoryServer
