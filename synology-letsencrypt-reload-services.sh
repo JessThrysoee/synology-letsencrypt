@@ -10,70 +10,68 @@ INFO="$ARCHIVE_PATH/INFO"
 
 
 get() {
-    local i="$1"
-    local prop="$2"
+    local i="$1" prop="$2"
     jq -r --arg cert_id "$CERT_ID" --arg i "$i" --arg prop "$prop" '.[$cert_id].services[$i|tonumber][$prop]' "$INFO"
 }
 
+find_exec_path() {
+    local subscriber="$1"
+
+    # search DSM6 and DSM7 paths
+    for base in /usr/libexec/certificate.d /usr/local/libexec/certificate.d \
+                /usr/syno/share/certificate.d /usr/local/share/certificate.d
+    do
+        script="$base/$subscriber"
+        if [[ -x "$script" ]]; then
+            printf '%s' "$script"
+            break
+        fi
+    done
+}
+
+find_cert_path() {
+    local subscriber="$1" service="$2"
+
+    for base in /usr/local/etc/certificate /usr/syno/etc/certificate; do
+        dir="$base/$subscriber/$service"
+        if [[ -e "$dir" ]]; then
+            printf '%s' "$dir"
+            break
+        fi
+    done
+}
 
 reload_services() {
-    local tls_profile_path="/usr/libexec/security-profile/tls-profile"
-
     services_length=$(jq -r --arg cert_id "$CERT_ID" '.[$cert_id].services|length' "$INFO")
 
     for (( i = 0; i < services_length; i++ )); do
 
-        isPkg=$(get "$i" isPkg)
         subscriber=$(get "$i" subscriber)
         service=$(get "$i" service)
 
-        if [[ $isPkg == true ]]; then
-            exec_path="/usr/local/libexec/certificate.d/$subscriber"
-            cert_path="/usr/local/etc/certificate/$subscriber/$service"
-        else
-            exec_path="/usr/libexec/certificate.d/$subscriber"
-            cert_path="/usr/syno/etc/certificate/$subscriber/$service"
+        cert_path="$(find_cert_path "$subscriber" "$service")"
 
-            if [[ -x $tls_profile_path/${subscriber}.sh ]]; then
-                exec_path="$tls_profile_path/${subscriber}.sh"
-            fi
-
-            if [[ $subscriber == "system" && $service == "default" && -x $tls_profile_path/dsm.sh ]]; then
-                exec_path="$tls_profile_path/dsm.sh"
-            fi
+        if diff -q "$ARCHIVE_PATH/$CERT_ID/cert.pem" "$cert_path/cert.pem" >/dev/null; then
+            continue # no change
         fi
 
-        if ! diff -q "$ARCHIVE_PATH/$CERT_ID/cert.pem" "$cert_path/cert.pem" >/dev/null; then
-            cp "$ARCHIVE_PATH/$CERT_ID/"{cert,chain,fullchain,privkey}.pem "$cert_path/"
+        cp "$ARCHIVE_PATH/$CERT_ID/"{cert,chain,fullchain,privkey}.pem "$cert_path/"
 
-            if [[ -x $exec_path ]]; then
-                if [[ $subscriber == "system" && $service == "default" ]]; then "$exec_path" else "$exec_path" "$service"; fi
-            fi
-
+        exec_path="$(find_exec_path "$subscriber")"
+        if [[ -x $exec_path ]]; then
+            "$exec_path" "$service"
         fi
 
+        profile_exec_script="${subscriber}.sh"
+        if [[ $subscriber == "system" && $service == "default" ]]; then
+            profile_exec_script="dsm.sh"
+        fi
+        profile_exec_path="/usr/libexec/security-profile/tls-profile/$profile_exec_script"
+        if [[ -x $profile_exec_path ]]; then
+            "$profile_exec_path"
+        fi
     done
 }
 
-
-reload_nginx() {
-    /usr/syno/bin/synow3tool --gen-all
-
-    if [[ -x /usr/syno/bin/synosystemctl ]]; then
-        if /usr/syno/bin/synow3tool --nginx=is-running > /dev/null 2>&1; then
-            /usr/syno/bin/synosystemctl reload --no-block nginx
-        fi
-    elif [[ -x /usr/syno/sbin/synoservice ]]; then
-        if /usr/syno/sbin/synoservice --status nginx > /dev/null 2>&1; then
-            /usr/syno/bin/synow3tool --gen-nginx-tmp && /usr/syno/sbin/synoservice --reload nginx
-        fi
-    else
-        echo "synosystemctl or synoservice not found" >&2
-    fi
-}
-
-
 reload_services
-reload_nginx
-
 
