@@ -50,8 +50,8 @@ if [[ ${CREATE_HOOK} == true ]]; then
 #!/bin/bash
 
 cp  $cert_path/$cert_domain.crt "$archive_path/cert.pem"
+cp  $cert_path/$cert_domain.crt "$archive_path/fullchain.pem"
 cp  $cert_path/$cert_domain.issuer.crt "$archive_path/chain.pem"
-cat $cert_path/$cert_domain.crt $cert_path/$cert_domain.issuer.crt > $archive_path/fullchain.pem
 cp  $cert_path/$cert_domain.key $archive_path/privkey.pem
 
 /usr/local/bin/synology-letsencrypt-reload-services.sh "$cert_id"
