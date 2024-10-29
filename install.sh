@@ -69,12 +69,15 @@ install_configuration() {
 DOMAINS=(--domains "example.com" --domains "*.example.com")
 EMAIL="user@example.com"
 
-## Specify DNS Provider (this example is from https://go-acme.github.io/lego/dns/simply/)
+# Specify DNS Provider (this example is from https://go-acme.github.io/lego/dns/simply/)
 DNS_PROVIDER="simply"
 export SIMPLY_ACCOUNT_NAME=XXXXXXX
 export SIMPLY_API_KEY=XXXXXXXXXX
 export SIMPLY_PROPAGATION_TIMEOUT=1800
 export SIMPLY_POLLING_INTERVAL=30
+
+# Should you need it; additional options can be passed directly to lego
+#LEGO_OPTIONS=(--key-type "rsa4096" --server "https://acme-staging-v02.api.letsencrypt.org/directory")
 EOF
     fi
 
