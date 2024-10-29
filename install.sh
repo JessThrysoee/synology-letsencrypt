@@ -35,7 +35,7 @@ install_lego() {
     )"
 
     if [[ -z $url ]]; then
-        echo "Could not find lego download URL! Try a different architecture maybe? See '$0 -h'" >&2
+        echo "Could not find lego download URL for architecture '$ARCH'! Try a different architecture maybe? See '$0 -h'" >&2
         exit 1
     fi
 

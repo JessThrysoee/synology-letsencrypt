@@ -30,7 +30,7 @@ export SIMPLY_PROPAGATION_TIMEOUT=1800
 export SIMPLY_POLLING_INTERVAL=30
 
 # Should you need it; additional options can be passed directly to lego
-#LEGO_OPTIONS=(--key-type "rsa4096")
+#LEGO_OPTIONS=(--key-type "rsa4096" --server "https://acme-staging-v02.api.letsencrypt.org/directory")
 ```
 
 Note: If you are generating a wildcard certificate, you must include the base domain next to the wildcard domain. For example, if you want to create a certificate for `*.example.com`, you must also include `example.com` in the `DOMAINS` value.

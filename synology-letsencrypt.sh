@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+[[ $EUID == 0 ]] || { echo >&2 "This script must be run as root"; exit 1; }
+
 while getopts ":p:ch" opt; do
     case $opt in
         p) LEGO_PATH="$OPTARG" ;;
@@ -18,41 +20,40 @@ done
 LEGO_PATH=${LEGO_PATH:-/usr/local/etc/synology-letsencrypt}
 CREATE_HOOK=${CREATE_HOOK:-true}
 
-[[ $EUID == 0 ]] || {
-    echo >&2 "This script must be run as root"
-    exit 1
-}
-
 source "$LEGO_PATH/env"
 
 export LEGO_PATH
 
+archive_path="/usr/syno/etc/certificate/_archive"
 cert_path="$LEGO_PATH/certificates"
 cert_domain="${DOMAINS[1]#\*.}"
 hook_path="$LEGO_PATH/hook"
+mkdir -p "$cert_path"
 
 ## cert_id
 cert_id_path="$cert_path/$cert_domain.cert_id"
-if [[ ! -s $cert_id_path ]]; then
-    mkdir -p "$cert_path"
-    /usr/local/bin/synology-letsencrypt-make-cert-id.sh >"$cert_id_path"
-fi
+/usr/local/bin/synology-letsencrypt-make-cert-id.sh "$cert_id_path" "$archive_path"
 source "$cert_id_path"
 
+if [[ -z $cert_id ]]; then
+    echo >&2 "ID not found in $cert_id_path"
+    exit 1
+fi
+
 ## install hook
-archive_path="/usr/syno/etc/certificate/_archive/$cert_id"
-if [[ ! -d $archive_path ]]; then
-    mkdir -p "$archive_path"
+archive_cert_path="$archive_path/$cert_id"
+if [[ ! -d $archive_cert_path ]]; then
+    mkdir -p "$archive_cert_path"
 fi
 
 if [[ ${CREATE_HOOK} == true ]]; then
     cat >"$hook_path" <<EOF
 #!/bin/bash
 
-cp "${cert_path}/${cert_domain}.crt" "${archive_path}/cert.pem"
-cp "${cert_path}/${cert_domain}.crt" "${archive_path}/fullchain.pem"
-cp "${cert_path}/${cert_domain}.issuer.crt" "${archive_path}/chain.pem"
-cp "${cert_path}/${cert_domain}.key" "${archive_path}/privkey.pem"
+cp "${cert_path}/${cert_domain}.crt" "${archive_cert_path}/cert.pem"
+cp "${cert_path}/${cert_domain}.crt" "${archive_cert_path}/fullchain.pem"
+cp "${cert_path}/${cert_domain}.issuer.crt" "${archive_cert_path}/chain.pem"
+cp "${cert_path}/${cert_domain}.key" "${archive_cert_path}/privkey.pem"
 
 /usr/local/bin/synology-letsencrypt-reload-services.sh "$cert_id"
 EOF
@@ -76,3 +77,4 @@ fi
     "${DOMAINS[@]}" \
     "${LEGO_OPTIONS[@]}" \
     "${CMD[@]}" "$hook_path"
+

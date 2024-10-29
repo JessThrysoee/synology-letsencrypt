@@ -1,5 +1,7 @@
 #!/bin/bash
 
+[[ $EUID == 0 ]] || { echo >&2 "This script must be run as root"; exit 1; }
+
 # Reload services assigned to the certificate with the key `cert_id` in the INFO file.
 # Inspired by https://github.com/bartowl/synology-stuff/blob/master/reload-certs.sh
 
