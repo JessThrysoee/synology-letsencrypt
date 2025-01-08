@@ -9,7 +9,9 @@ CERT_ID="$1"
 
 ARCHIVE_PATH="/usr/syno/etc/certificate/_archive"
 INFO="$ARCHIVE_PATH/INFO"
+DEFAULT="$ARCHIVE_PATH/DEFAULT"
 
+CERT_ID_DEFAULT="$(cat "$DEFAULT")"
 
 get() {
     local i="$1" prop="$2"
@@ -44,23 +46,34 @@ find_cert_path() {
 }
 
 reload_services() {
-    services_length=$(jq -r --arg cert_id "$CERT_ID" '.[$cert_id].services|length' "$INFO")
+    printf '\n* certificat id : %s\n' "$CERT_ID"
+    c_desc="$(jq -r ".\"$CERT_ID\".desc" $INFO)"
+    printf '* certificat description : %s\n' "$c_desc"
+    if [[ $CERT_ID == $CERT_ID_DEFAULT ]]; then
+        printf '  * default certificat\n'
+    fi
 
+    services_length=$(jq -r --arg cert_id "$CERT_ID" '.[$cert_id].services|length' "$INFO")
+    printf '* scanning %s attached service(s) to this certificat\n' "$services_length"
     for (( i = 0; i < services_length; i++ )); do
 
         subscriber=$(get "$i" subscriber)
         service=$(get "$i" service)
+        display_name=$(get "$i" display_name)
 
         cert_path="$(find_cert_path "$subscriber" "$service")"
 
         if diff -q "$ARCHIVE_PATH/$CERT_ID/cert.pem" "$cert_path/cert.pem" >/dev/null; then
+            printf '  + no certificat change for service : %s (%s)\n' "$service" "$display_name"
             continue # no change
         fi
 
+        printf '  + updating certificat for service : %s (%s)\n' "$service" "$display_name"
         cp "$ARCHIVE_PATH/$CERT_ID/"{cert,chain,fullchain,privkey}.pem "$cert_path/"
 
         exec_path="$(find_exec_path "$subscriber")"
         if [[ -x $exec_path ]]; then
+            printf '  + reloading service : %s\n' "$service"
             "$exec_path" "$service"
         fi
 
@@ -75,6 +88,7 @@ reload_services() {
     done
 }
 
+printf '** reload attached services to certificats **\n'
 if [[ -z $CERT_ID ]]; then
     for c_id in $(jq -r 'keys[]' $INFO); do
         CERT_ID=$c_id
