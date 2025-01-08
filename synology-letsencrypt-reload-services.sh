@@ -75,5 +75,11 @@ reload_services() {
     done
 }
 
-reload_services
-
+if [[ -z $CERT_ID ]]; then
+    for c_id in $(jq -r 'keys[]' $INFO); do
+        CERT_ID=$c_id
+        reload_services
+    done
+else
+    reload_services
+fi
