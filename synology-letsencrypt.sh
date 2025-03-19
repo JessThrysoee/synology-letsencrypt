@@ -63,9 +63,9 @@ fi
 
 ## run or renew
 if [[ -s $cert_path/$cert_domain.crt ]]; then
-    CMD=(renew --renew-hook)
+    CMD=(renew --renew-hook "$hook_path" "${LEGO_RENEW_OPTIONS[@]}")
 else
-    CMD=(run --run-hook)
+    CMD=(run --run-hook "$hook_path" "${LEGO_RUN_OPTIONS[@]}")
 fi
 
 # https://go-acme.github.io/lego/usage/cli/
@@ -76,5 +76,5 @@ fi
     --dns "$DNS_PROVIDER" \
     "${DOMAINS[@]}" \
     "${LEGO_OPTIONS[@]}" \
-    "${CMD[@]}" "$hook_path"
+    "${CMD[@]}"
 

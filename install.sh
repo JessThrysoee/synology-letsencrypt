@@ -78,6 +78,8 @@ export SIMPLY_POLLING_INTERVAL=30
 
 # Should you need it; additional options can be passed directly to lego
 #LEGO_OPTIONS=(--key-type "rsa4096" --server "https://acme-staging-v02.api.letsencrypt.org/directory")
+#LEGO_RUN_OPTIONS=()
+#LEGO_RENEW_OPTIONS=(--ari-disable)
 EOF
     fi
 
