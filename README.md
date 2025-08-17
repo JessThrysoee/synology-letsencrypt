@@ -82,3 +82,7 @@ To **uninstall** synology-letsencrypt, run the [uninstall script](uninstall.sh).
 ```sh
 curl -sSL https://raw.githubusercontent.com/JessThrysoee/synology-letsencrypt/master/uninstall.sh | bash
 ```
+
+## Take a look at the [acme-dns](https://github.com/joohoi/acme-dns) project
+
+...if your DNS provider is not _directly_ supported by lego, or if you wish to avoid keeping DNS provider API-keys on your synology box. Lego supports [acme-dns](https://go-acme.github.io/lego/dns/acme-dns/).
