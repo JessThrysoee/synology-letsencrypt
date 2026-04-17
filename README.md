@@ -35,8 +35,6 @@ export SIMPLY_POLLING_INTERVAL=30
 #LEGO_RENEW_OPTIONS=(--ari-disable)
 ```
 
-Note: If you are generating a wildcard certificate, you must include the base domain next to the wildcard domain. For example, if you want to create a certificate for `*.example.com`, you must also include `example.com` in the `DOMAINS` value.
-
 Now you should be able to run `/usr/local/bin/synology-letsencrypt.sh`.
 
 To schedule a daily task, log into the Synology DSM and add a user-defined script:

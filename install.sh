@@ -125,6 +125,7 @@ install() {
     install_script "synology-letsencrypt.sh"
     install_script "synology-letsencrypt-reload-services.sh"
     install_script "synology-letsencrypt-make-cert-id.sh"
+    install_script "synology-letsencrypt-lib.sh"
     install_configuration
 }
 

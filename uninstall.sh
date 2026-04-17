@@ -31,6 +31,7 @@ uninstall() {
     uninstall_script "synology-letsencrypt.sh"
     uninstall_script "synology-letsencrypt-reload-services.sh"
     uninstall_script "synology-letsencrypt-make-cert-id.sh"
+    uninstall_script "synology-letsencrypt-lib.sh"
     uninstall_configuration
     uninstall_cert_message
 }
