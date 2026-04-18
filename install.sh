@@ -2,11 +2,23 @@
 
 {
 
+arch_map() {
+    local arch
+    arch=$(uname -m)
+    case "$arch" in
+        x86_64)       echo "amd64" ;;
+        aarch64)      echo "arm64" ;;
+        armv7l)       echo "armv7" ;;
+        i686|i386)    echo "386" ;;
+        *)            return 1 ;;
+    esac
+}
+
 while getopts ":a:h" opt; do
   case $opt in
     a) ARCH="$OPTARG";;
     h) echo "Usage: $0 [-a <arch>]"
-       echo "  -a <arch>  Architecture of lego to install (default: $(dpkg --print-architecture))"
+       echo "  -a <arch>  Architecture of lego to install (auto-detect: $(arch_map || echo "unsupported"))"
        exit 0
     ;;
     :) echo "Error: -${OPTARG} requires an argument.";;
@@ -15,7 +27,12 @@ while getopts ":a:h" opt; do
   esac
 done
 
-ARCH=${ARCH:-$(dpkg --print-architecture)}
+if [[ -z $ARCH ]]; then
+    ARCH=$(arch_map) || {
+        echo "Error: Unsupported architecture '$(uname -m)'. Use -a to specify manually." >&2
+        exit 1
+    }
+fi
 
 permissions() {
     local mod="$1"
