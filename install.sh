@@ -110,8 +110,17 @@ Check $env and edit as needed.
 EOF
 }
 
+ensure_usr_local_bin() {
+    local dir="/usr/local/bin"
+
+    if [[ ! -d $dir ]]; then
+        mkdir -p "$dir"
+        permissions 755 "$dir"
+    fi
+}
 
 install() {
+    ensure_usr_local_bin
     install_lego
     install_script "synology-letsencrypt.sh"
     install_script "synology-letsencrypt-reload-services.sh"
