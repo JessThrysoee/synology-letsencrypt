@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 [[ $EUID == 0 ]] || { echo >&2 "This script must be run as root"; exit 1; }
 
@@ -52,6 +52,10 @@ reload_services() {
         service=$(get "$i" service)
 
         cert_path="$(find_cert_path "$subscriber" "$service")"
+        if [[ -z $cert_path ]]; then
+            echo >&2 "cert_path not found in for \"$subscriber\" \"$service\""
+            continue
+        fi
 
         if diff -q "$ARCHIVE_PATH/$CERT_ID/cert.pem" "$cert_path/cert.pem" >/dev/null; then
             continue # no change
