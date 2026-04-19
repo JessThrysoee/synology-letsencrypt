@@ -35,7 +35,7 @@ cert_domain="$(sanitizedDomain "${DOMAINS[1]}")"
 
 ## cert_id
 cert_id_path="$cert_path/$cert_domain.cert_id"
-/usr/local/bin/synology-letsencrypt-make-cert-id.sh "$cert_id_path" "$archive_path"
+makeCertId "$cert_id_path" "$archive_path"
 source "$cert_id_path"
 
 if [[ -z $cert_id ]]; then
