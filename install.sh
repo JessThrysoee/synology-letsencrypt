@@ -119,12 +119,23 @@ ensure_usr_local_bin() {
     fi
 }
 
+uninstall_deprecated_script() {
+    local path="/usr/local/bin/$1"
+
+    if [[ -f "$path" ]]; then
+        sudo rm "$path"
+
+        printf "uninstalled: %s\n" "$path"
+    fi
+}
+
 install() {
     ensure_usr_local_bin
     install_lego
     install_script "synology-letsencrypt.sh"
     install_script "synology-letsencrypt-reload-services.sh"
-    install_script "synology-letsencrypt-make-cert-id.sh"
+    install_script "synology-letsencrypt-lib.sh"
+    uninstall_deprecated_script "synology-letsencrypt-make-cert-id.sh"
     install_configuration
 }
 

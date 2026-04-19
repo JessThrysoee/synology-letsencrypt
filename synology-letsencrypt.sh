@@ -17,6 +17,8 @@ while getopts ":p:ch" opt; do
     esac
 done
 
+source /usr/local/bin/synology-letsencrypt-lib.sh
+
 LEGO_PATH=${LEGO_PATH:-/usr/local/etc/synology-letsencrypt}
 CREATE_HOOK=${CREATE_HOOK:-true}
 
@@ -26,13 +28,14 @@ export LEGO_PATH
 
 archive_path="/usr/syno/etc/certificate/_archive"
 cert_path="$LEGO_PATH/certificates"
-cert_domain="${DOMAINS[1]#\*.}"
 hook_path="$LEGO_PATH/hook"
 mkdir -p "$cert_path"
 
+cert_domain="$(sanitizedDomain "${DOMAINS[1]}")"
+
 ## cert_id
 cert_id_path="$cert_path/$cert_domain.cert_id"
-/usr/local/bin/synology-letsencrypt-make-cert-id.sh "$cert_id_path" "$archive_path"
+makeCertId "$cert_id_path" "$archive_path"
 source "$cert_id_path"
 
 if [[ -z $cert_id ]]; then
