@@ -66,9 +66,9 @@ fi
 
 ## run or renew
 if [[ -s $cert_path/$cert_domain.crt ]]; then
-    CMD=(renew --renew-hook "$hook_path" "${LEGO_RENEW_OPTIONS[@]}")
+    CMD=(run --deploy-hook "$hook_path" "${LEGO_RENEW_OPTIONS[@]}")
 else
-    CMD=(run --run-hook "$hook_path" "${LEGO_RUN_OPTIONS[@]}")
+    CMD=(run --deploy-hook "$hook_path" "${LEGO_RUN_OPTIONS[@]}")
 fi
 
 # https://go-acme.github.io/lego/usage/cli/
