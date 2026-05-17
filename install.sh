@@ -47,8 +47,11 @@ install_lego() {
     local url
     
     url="$(
-        curl -sSL "https://api.github.com/repos/go-acme/lego/releases/latest" \
-        | jq --unbuffered -r --arg arch "$ARCH" '.assets[].browser_download_url | select(.|endswith("linux_\($arch).tar.gz"))'
+        curl -sSL "https://api.github.com/repos/go-acme/lego/releases?per_page=1000" \
+        | jq --unbuffered -r --arg arch "$ARCH" '
+            map(select((.draft|not) and (.prerelease|not) and (.tag_name | test("^v4\\."))))
+            | .[0].assets[].browser_download_url
+            | select(endswith("linux_\($arch).tar.gz"))'
     )"
 
     if [[ -z $url ]]; then
