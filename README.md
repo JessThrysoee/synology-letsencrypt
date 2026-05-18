@@ -1,28 +1,41 @@
 # synology-letsencrypt
 
-Create and maintain a [Let's Encrypt](https://letsencrypt.org/) certificate on a Synology NAS.
+Create and manage a [Let's Encrypt](https://letsencrypt.org/) certificate on a Synology NAS.
 
-Uses [lego](https://go-acme.github.io/lego/) and the [ACME DNS-01 challenge](https://letsencrypt.org/docs/challenge-types/#dns-01-challenge) for any of the supported [DNS Providers](https://go-acme.github.io/lego/dns/).
+This project uses [lego](https://go-acme.github.io/lego/) and the [ACME DNS-01 challenge](https://letsencrypt.org/docs/challenge-types/#dns-01-challenge) with any supported [DNS provider](https://go-acme.github.io/lego/dns/).
+
 
 ## Install & Update Script
 
-To **install** or **update** synology-letsencrypt, run the [install script](install.sh). To do that, either download and run the script manually, or use the following cURL command:
+To **install** or **update** `synology-letsencrypt`, run the [install script](install.sh). You can either download and run the script manually, or use the following curl command:
 
 ```sh
 curl -sSL https://raw.githubusercontent.com/JessThrysoee/synology-letsencrypt/master/install.sh | bash
 ```
 
-The script has to be run as root. To run it as root, you can SSH into your NAS with an admin user and then issue `sudo -i` to become root (the password is the same as the admin user's).
+The script must be run as root. You can SSH into your NAS as an admin user and then run `sudo -i` to become root (using the same password as the admin user).
+
+### <span style="background:yellow;">Migration from lego v4 to v5</span>
+
+If you are updating from a version of `lego` earlier than v5, note that v5 introduces breaking changes to the CLI, directory structure, and JSON file format.
+
+After running the [install script](install.sh) to update `lego` and this repository's scripts to the latest versions, run the new v5 command `lego migrate` before running any other commands. For example:
+
+    /usr/local/bin/lego migrate --path /usr/local/etc/synology-letsencrypt/
+
+More information is available in the [v5 blog post](https://ldez.github.io/blog/2026/05/11/lego-v5/).
+
+Also note that the optional environment variables `LEGO_RUN_OPTIONS` and `LEGO_RENEW_OPTIONS` in your `env` file have been replaced with a single optional variable, `LEGO_OPTIONS`.
 
 ## Configuration
 
-Update `/usr/local/etc/synology-letsencrypt/env` with domain(s), email, and DNS API-key:
+Update `/usr/local/etc/synology-letsencrypt/env` with your domain(s), email address, and DNS API key:
 
 ```sh
 DOMAINS=(--domains "example.com" --domains "*.example.com")
 EMAIL="user@example.com"
 
-# Specify DNS Provider (this example is from https://go-acme.github.io/lego/dns/simply/)
+# Specify the DNS provider (this example is from https://go-acme.github.io/lego/dns/simply/)
 DNS_PROVIDER="simply"
 export SIMPLY_ACCOUNT_NAME=XXXXXXX
 export SIMPLY_API_KEY=XXXXXXXXXX
@@ -30,44 +43,41 @@ export SIMPLY_PROPAGATION_TIMEOUT=1800
 export SIMPLY_POLLING_INTERVAL=30
 
 # Should you need it; additional options can be passed directly to lego
-#LEGO_OPTIONS=(--key-type "rsa4096" --server "https://acme-staging-v02.api.letsencrypt.org/directory")
-#LEGO_RUN_OPTIONS=()
-#LEGO_RENEW_OPTIONS=(--ari-disable)
+#LEGO_OPTIONS=(--key-type "RSA4096" --ari-disable --server "letsencrypt-staging")
 ```
 
-Now you should be able to run `/usr/local/bin/synology-letsencrypt.sh`.
+You should now be able to run `/usr/local/bin/synology-letsencrypt.sh`.
 
-To schedule a daily task, log into the Synology DSM and add a user-defined script:
+To schedule a daily task, log in to Synology DSM and add a user-defined script:
 
     Synology DSM -> Control Panel -> Task Scheduler
        Create -> Scheduled Task -> User-defined script
           General -> User = root
           Task Settings -> User-defined script = /bin/bash /usr/local/bin/synology-letsencrypt.sh
 
-To secure services with the certificate, se the [Configure Certificates](https://kb.synology.com/en-global/DSM/help/DSM/AdminCenter/connection_certificate?version=7#b_64) documentation.
+To secure services with the certificate, see the [Configure Certificates](https://kb.synology.com/en-global/DSM/help/DSM/AdminCenter/connection_certificate?version=7#b_64) documentation.
 
 ### Multiple Certificates
 
-If you need to generate more than one certificate, you can parameterize synology-letsencrypt.sh with the path of a certificate configuration:
+If you need to generate multiple certificates, you can run `synology-letsencrypt.sh` with the path to a certificate-specific configuration:
+
 
 ```shellsession
-$ /usr/local/bin/synology-letsencrypt.sh -p /usr/local/bin/synology-letsencrypt/example.com
-$ /usr/local/bin/synology-letsencrypt.sh -p /usr/local/bin/synology-letsencrypt/other-example.com
+$ /usr/local/bin/synology-letsencrypt.sh -p /usr/local/etc/synology-letsencrypt/example.com
+$ /usr/local/bin/synology-letsencrypt.sh -p /usr/local/etc/synology-letsencrypt/other-example.com
 ```
 
-This creates an entire configuration in
+This creates a separate configuration in
 `/usr/local/etc/synology-letsencrypt/example.com/env` and
-`/usr/local/etc/synology-letsencrypt/other-example.com/env` respectively, which
-you can tune according to your needs. That extends to modifying the `hook` in
-each one to match your needs.
+`/usr/local/etc/synology-letsencrypt/other-example.com/env`, respectively. 
+You can then customize each one as needed, including the `hook` file in each configuration.
 
-You might want this if you require more than one certificate on the Synology, or
-if you want to generate a certificate for another host on your Synology.
+This is useful if you need more than one certificate on your Synology or want to generate a certificate for another host managed by the Synology.
 
 ### Customizing the hook script
 
-By default, `synology-letsencrypt.sh` will overwrite any changes you make to the
-hook script to preserve the core functionality of this client. If you have customized your script, you can preserve its changes by adding the `-c` parameter to your invocation:
+By default, `synology-letsencrypt.sh` overwrites any changes you make to the hook script to preserve core functionality.
+If you have customized the hook script, you can preserve your changes by adding the `-c` option when running the command:
 
 ```shellsession
 $ /usr/local/bin/synology-letsencrypt.sh -c
@@ -75,12 +85,12 @@ $ /usr/local/bin/synology-letsencrypt.sh -c
 
 ## Uninstall
 
-To **uninstall** synology-letsencrypt, run the [uninstall script](uninstall.sh). To do that, either download and run the script manually, or use the following cURL command:
+To **uninstall** `synology-letsencrypt`, run the [uninstall script](uninstall.sh). You can either download and run the script manually, or use the following curl command:
 
 ```sh
 curl -sSL https://raw.githubusercontent.com/JessThrysoee/synology-letsencrypt/master/uninstall.sh | bash
 ```
 
-## Take a look at the [acme-dns](https://github.com/joohoi/acme-dns) project
+## Consider the [acme-dns](https://github.com/joohoi/acme-dns) project
 
-...if your DNS provider is not _directly_ supported by lego, or if you wish to avoid keeping DNS provider API-keys on your synology box. Lego supports [acme-dns](https://go-acme.github.io/lego/dns/acme-dns/).
+...if your DNS provider is not _directly_ supported by `lego`, or if you want to avoid storing your DNS provider's API keys on your Synology device. `lego` supports [acme-dns](https://go-acme.github.io/lego/dns/acme-dns/).

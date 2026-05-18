@@ -39,15 +39,38 @@ makeCertId() {
 }
 
 
-punycode() {
+# implement `lego`SanitizedName [ref.: https://github.com/go-acme/lego/blob/f9f9645cf7be7d399c025ec596484263eb9f963a/cmd/internal/storage/storage_certificates.go#L67]
+sanitizedName() {
     if command -v python3 &>/dev/null; then
-        python3 -c "import sys; [sys.stdout.write(l.strip().encode('idna').decode('ascii')+'\n') for l in sys.stdin]"
+        python3 -c '
+import sys
+
+name = sys.argv[1]
+
+try:
+    safe = name.replace(":", "-").replace("*", "_").encode("idna").decode("ascii")
+except Exception as e:
+    sys.stderr.write("Could not sanitize the name: %s\n" % e)
+    sys.exit(1)
+
+out = "".join(ch for ch in safe if ch.isalnum() or ch in "-_.@")
+sys.stdout.write(out)
+' "$1" || return $?
     else
-        python2 -c "import sys; [sys.stdout.write(l.strip().decode('utf-8').encode('idna')+'\n') for l in sys.stdin]"
+        python2 -c '
+import sys
+
+name = sys.argv[1]
+
+try:
+    safe = name.decode("utf-8").replace(":", "-").replace("*", "_").encode("idna")
+except Exception as e:
+    sys.stderr.write("Could not sanitize the name: %s\n" % e)
+    sys.exit(1)
+
+out = "".join(ch for ch in safe if ch.isalnum() or ch in "-_.@")
+sys.stdout.write(out)
+' "$1" || return $?
     fi
 }
-
-
-# implement `lego` sanitizedDomain [ref.: https://github.com/go-acme/lego/blob/e0a1fe55277b69a84c45927ef0c075ce062a86a0/cmd/certs_storage.go#L320]
-sanitizedDomain() { printf '%s' "$1" | tr ':*' '-_' | punycode; }
 
