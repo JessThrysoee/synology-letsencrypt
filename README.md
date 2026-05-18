@@ -15,7 +15,8 @@ curl -sSL https://raw.githubusercontent.com/JessThrysoee/synology-letsencrypt/ma
 
 The script must be run as root. You can SSH into your NAS as an admin user and then run `sudo -i` to become root (using the same password as the admin user).
 
-### <span style="background:yellow;">Migration from lego v4 to v5</span>
+> [!IMPORTANT]
+> Migration from `lego` v4 to v5
 
 If you are updating from a version of `lego` earlier than v5, note that v5 introduces breaking changes to the CLI, directory structure, and JSON file format.
 
