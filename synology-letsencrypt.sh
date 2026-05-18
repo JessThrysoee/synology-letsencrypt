@@ -64,20 +64,13 @@ EOF
     chmod 700 "$hook_path"
 fi
 
-## run or renew
-if [[ -s $cert_path/$cert_domain.crt ]]; then
-    CMD=(renew --renew-hook "$hook_path" "${LEGO_RENEW_OPTIONS[@]}")
-else
-    CMD=(run --run-hook "$hook_path" "${LEGO_RUN_OPTIONS[@]}")
-fi
-
 # https://go-acme.github.io/lego/usage/cli/
-/usr/local/bin/lego \
+/usr/local/bin/lego run \
     --accept-tos \
-    --key-type "rsa4096" \
+    --deploy-hook "$hook_path" \
+    --key-type "RSA4096" \
     --email "$EMAIL" \
     --dns "$DNS_PROVIDER" \
     "${DOMAINS[@]}" \
-    "${LEGO_OPTIONS[@]}" \
-    "${CMD[@]}"
+    "${LEGO_OPTIONS[@]}"
 
