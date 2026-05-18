@@ -31,7 +31,7 @@ cert_path="$LEGO_PATH/certificates"
 hook_path="$LEGO_PATH/hook"
 mkdir -p "$cert_path"
 
-cert_domain="$(sanitizedDomain "${DOMAINS[1]}")"
+cert_domain="$(sanitizedName "${DOMAINS[1]}")"
 
 ## cert_id
 cert_id_path="$cert_path/$cert_domain.cert_id"
