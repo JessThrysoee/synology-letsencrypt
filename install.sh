@@ -1,6 +1,7 @@
 #!/bin/bash
 
 {
+set -euo pipefail
 
 arch_map() {
     local arch
@@ -14,9 +15,10 @@ arch_map() {
     esac
 }
 
-while getopts ":a:h" opt; do
+while getopts ":a:b:h" opt; do
   case $opt in
     a) ARCH="$OPTARG";;
+    b) BRANCH="$OPTARG";;
     h) echo "Usage: $0 [-a <arch>]"
        echo "  -a <arch>  Architecture of lego to install (auto-detect: $(arch_map || echo "unsupported"))"
        exit 0
@@ -27,12 +29,14 @@ while getopts ":a:h" opt; do
   esac
 done
 
-if [[ -z $ARCH ]]; then
+if [[ -z ${ARCH:-} ]]; then
     ARCH=$(arch_map) || {
         echo "Error: Unsupported architecture '$(uname -m)'. Use -a to specify manually." >&2
         exit 1
     }
 fi
+
+BRANCH="${BRANCH:-master}"
 
 permissions() {
     local mod="$1"
@@ -45,9 +49,9 @@ permissions() {
 install_lego() {
     local path="/usr/local/bin/lego"
     local url
-    
+
     url="$(
-        curl -sSL "https://api.github.com/repos/go-acme/lego/releases/latest" \
+        curl -fsSL "https://api.github.com/repos/go-acme/lego/releases/latest" \
         | jq --unbuffered -r --arg arch "$ARCH" '.assets[].browser_download_url | select(.|endswith("linux_\($arch).tar.gz"))'
     )"
 
@@ -56,7 +60,7 @@ install_lego() {
         exit 1
     fi
 
-    curl -sSL "$url" \
+    curl -fsSL "$url" \
         | sudo tar -zx -C "${path%/*}" -- "${path##*/}"
 
     permissions 755 "$path"
@@ -67,7 +71,7 @@ install_script() {
     local name="$1"
     local path="/usr/local/bin/$name"
 
-    sudo curl -sSL -o "$path" "https://raw.githubusercontent.com/JessThrysoee/synology-letsencrypt/master/$name"
+    sudo curl -fsSL -o "$path" "https://raw.githubusercontent.com/JessThrysoee/synology-letsencrypt/$BRANCH/$name"
 
     permissions 755 "$path"
     printf "installed: %s\n" "$path"
@@ -76,37 +80,68 @@ install_script() {
 
 install_configuration() {
     local dir="/usr/local/etc/synology-letsencrypt"
-    local env="$dir/env"
+    local config="$dir/lego.yml"
+    local creds="$dir/lego.env"
 
     sudo mkdir -p "$dir"
     permissions 700 "$dir"
 
-    if [[ ! -s $env ]]; then
-        sudo tee "$env" > /dev/null <<EOF
-DOMAINS=(--domains "example.com" --domains "*.example.com")
-EMAIL="user@example.com"
+    if [[ ! -s $config ]]; then
+        sudo tee "$config" > /dev/null <<EOF
+# Reference: https://go-acme.github.io/lego/references/ref-file/
+# Run via:   synology-letsencrypt.sh   (wraps: lego --config <this file>)
+#
+# Only certificates meant for THIS Synology belong here. The deploy hook below
+# is global -- it runs for every certificate in this file. Keep certificates for
+# other hosts or uses in a SEPARATE lego.yml outside this project.
 
-# Specify DNS Provider (this example is from https://go-acme.github.io/lego/dns/simply/)
-DNS_PROVIDER="simply"
-export SIMPLY_ACCOUNT_NAME=XXXXXXX
-export SIMPLY_API_KEY=XXXXXXXXXX
-export SIMPLY_PROPAGATION_TIMEOUT=1800
-export SIMPLY_POLLING_INTERVAL=30
+storage: /usr/local/etc/synology-letsencrypt
 
-# Should you need it; additional options can be passed directly to lego
-#LEGO_OPTIONS=(--key-type "rsa4096" --server "https://acme-staging-v02.api.letsencrypt.org/directory")
-#LEGO_RUN_OPTIONS=()
-#LEGO_RENEW_OPTIONS=(--ari-disable)
+accounts:
+  default:
+    acceptsTermsOfService: true
+    #server: letsencrypt-staging
+
+challenges:
+  # DNS-01 via simply.com -- https://go-acme.github.io/lego/dns/simply/
+  simply:
+    dns:
+      provider: simply
+      envFile: /usr/local/etc/synology-letsencrypt/lego.env
+
+certificates:
+  example.com:  # name for this certificate (lego names its cert files after it); use your main domain
+    challenge: simply
+    domains:
+      - example.com
+      - "*.example.com"
+
+hooks:
+  deploy:
+    command: /usr/local/bin/synology-letsencrypt-deploy-hook.sh
 EOF
     fi
 
-    permissions 600 "$env"
-    printf "installed: %s\n" "$env"
-    
+    permissions 600 "$config"
+    printf "installed: %s\n" "$config"
+
+    if [[ ! -s $creds ]]; then
+        sudo tee "$creds" > /dev/null <<EOF
+# DNS provider credentials, referenced by envFile in lego.yml.
+
+# simply.com -- https://go-acme.github.io/lego/dns/simply/
+SIMPLY_ACCOUNT_NAME=XXXXXXXX
+SIMPLY_API_KEY=XXXXXXXXXXXXXXXX
+EOF
+    fi
+
+    permissions 600 "$creds"
+    printf "installed: %s\n" "$creds"
+
     cat << EOF
     All done!
 
-Check $env and edit as needed.
+Check $config and $creds and edit as needed.
 EOF
 }
 
@@ -114,7 +149,7 @@ ensure_usr_local_bin() {
     local dir="/usr/local/bin"
 
     if [[ ! -d $dir ]]; then
-        mkdir -p "$dir"
+        sudo mkdir -p "$dir"
         permissions 755 "$dir"
     fi
 }
@@ -133,6 +168,7 @@ install() {
     ensure_usr_local_bin
     install_lego
     install_script "synology-letsencrypt.sh"
+    install_script "synology-letsencrypt-deploy-hook.sh"
     install_script "synology-letsencrypt-reload-services.sh"
     install_script "synology-letsencrypt-lib.sh"
     uninstall_deprecated_script "synology-letsencrypt-make-cert-id.sh"
@@ -140,4 +176,5 @@ install() {
 }
 
 install
+
 }
