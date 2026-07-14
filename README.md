@@ -16,35 +16,51 @@ curl -sSL https://raw.githubusercontent.com/JessThrysoee/synology-letsencrypt/ma
 The script must be run as root. You can SSH into your NAS as an admin user and then run `sudo -i` to become root (using the same password as the admin user).
 
 > [!IMPORTANT]
-> Migration from `lego` v4 to v5
-
-If you are updating from a version of `lego` earlier than v5, note that v5 introduces breaking changes to the CLI, directory structure, and JSON file format.
-
-After running the [install script](install.sh) to update `lego` and this repository's scripts to the latest versions, run the new v5 command `lego migrate` before running any other commands. For example:
-
-    /usr/local/bin/lego migrate --path /usr/local/etc/synology-letsencrypt/
-
-More information is available in the [v5 blog post](https://ldez.github.io/blog/2026/05/11/lego-v5/).
-
-Also note that the optional environment variables `LEGO_RUN_OPTIONS` and `LEGO_RENEW_OPTIONS` in your `env` file have been replaced with a single optional variable, `LEGO_OPTIONS`.
+> Already have `synology-letsencrypt` installed? Configuration now lives in
+> lego's config file. See [MIGRATION.md](MIGRATION.md) before updating.
 
 ## Configuration
 
-Update `/usr/local/etc/synology-letsencrypt/env` with your domain(s), email address, and DNS API key:
+Configuration lives in two files, both created by the install script under `/usr/local/etc/synology-letsencrypt/`:
+
+- `lego.yml`: your domains, DNS provider, and other non-secret settings, in lego's [config file](https://go-acme.github.io/lego/references/ref-file/) format.
+- `lego.env`: your DNS provider credentials, referenced from `lego.yml` via `envFile`.
+
+Edit `lego.yml` with your domain(s) and DNS provider. The example uses [simply.com](https://go-acme.github.io/lego/dns/simply/), but you can use whichever [DNS provider](https://go-acme.github.io/lego/dns/) you like:
+
+```yaml
+storage: /usr/local/etc/synology-letsencrypt
+
+accounts:
+  default:
+    acceptsTermsOfService: true
+    #server: letsencrypt-staging
+
+challenges:
+  # DNS-01 via simply.com -- https://go-acme.github.io/lego/dns/simply/
+  simply:
+    dns:
+      provider: simply
+      envFile: /usr/local/etc/synology-letsencrypt/lego.env
+
+certificates:
+  example.com:  # name for this certificate (lego names its cert files after it); use your main domain
+    challenge: simply
+    domains:
+      - example.com
+      - "*.example.com"
+
+hooks:
+  deploy:
+    command: /usr/local/bin/synology-letsencrypt-deploy-hook.sh
+```
+
+Then put your DNS provider credentials in `lego.env`:
 
 ```sh
-DOMAINS=(--domains "example.com" --domains "*.example.com")
-EMAIL="user@example.com"
-
-# Specify the DNS provider (this example is from https://go-acme.github.io/lego/dns/simply/)
-DNS_PROVIDER="simply"
-export SIMPLY_ACCOUNT_NAME=XXXXXXX
-export SIMPLY_API_KEY=XXXXXXXXXX
-export SIMPLY_PROPAGATION_TIMEOUT=1800
-export SIMPLY_POLLING_INTERVAL=30
-
-# Should you need it; additional options can be passed directly to lego
-#LEGO_OPTIONS=(--key-type "RSA4096" --ari-disable --server "letsencrypt-staging")
+# simply.com -- https://go-acme.github.io/lego/dns/simply/
+SIMPLY_ACCOUNT_NAME=XXXXXXXX
+SIMPLY_API_KEY=XXXXXXXXXXXXXXXX
 ```
 
 You should now be able to run `/usr/local/bin/synology-letsencrypt.sh`.
@@ -60,28 +76,41 @@ To secure services with the certificate, see the [Configure Certificates](https:
 
 ### Multiple Certificates
 
-If you need to generate multiple certificates, you can run `synology-letsencrypt.sh` with the path to a certificate-specific configuration:
+To maintain more than one certificate on your Synology, add another entry under `certificates:` in the same `lego.yml`. Each entry has its own name, challenge, and domains:
 
+```yaml
+certificates:
+  example.com:
+    challenge: simply
+    domains:
+      - example.com
+      - "*.example.com"
 
-```shellsession
-$ /usr/local/bin/synology-letsencrypt.sh -p /usr/local/etc/synology-letsencrypt/example.com
-$ /usr/local/bin/synology-letsencrypt.sh -p /usr/local/etc/synology-letsencrypt/other-example.com
+  other-example.com:
+    challenge: simply
+    domains:
+      - other-example.com
 ```
 
-This creates a separate configuration in
-`/usr/local/etc/synology-letsencrypt/example.com/env` and
-`/usr/local/etc/synology-letsencrypt/other-example.com/env`, respectively. 
-You can then customize each one as needed, including the `hook` file in each configuration.
+If a certificate uses a different DNS provider, add another entry under `challenges:` and point the certificate at it.
 
-This is useful if you need more than one certificate on your Synology or want to generate a certificate for another host managed by the Synology.
+Every certificate in this file is deployed to this Synology, because the `hooks.deploy` command is a **global** lego setting that runs once for each certificate that was issued or renewed. Therefore, only put certificates you actually want installed on this Synology here.
 
-### Customizing the hook script
+If you also use `lego` to obtain certificates for *other* purposes (a different host, a service that is not on this Synology), keep those in a **separate** `lego.yml` outside this project, with its own (or no) deploy hook. That keeps them from being deployed into this Synology's certificate store.
 
-By default, `synology-letsencrypt.sh` overwrites any changes you make to the hook script to preserve core functionality.
-If you have customized the hook script, you can preserve your changes by adding the `-c` option when running the command:
+### Customizing the deploy hook
 
-```shellsession
-$ /usr/local/bin/synology-letsencrypt.sh -c
+After each successful issuance or renewal, `lego` runs the deploy hook configured
+as `hooks.deploy.command` in `lego.yml`, which by default is
+`/usr/local/bin/synology-letsencrypt-deploy-hook.sh`. It generates the PEM files
+Synology expects and reloads the affected services.
+
+To run your own hook instead, change that command to point at your script:
+
+```yaml
+hooks:
+  deploy:
+    command: /usr/local/etc/synology-letsencrypt/my-deploy-hook.sh
 ```
 
 ## Uninstall
@@ -91,6 +120,14 @@ To **uninstall** `synology-letsencrypt`, run the [uninstall script](uninstall.sh
 ```sh
 curl -sSL https://raw.githubusercontent.com/JessThrysoee/synology-letsencrypt/master/uninstall.sh | bash
 ```
+
+> [!WARNING]
+> This removes the `lego` binary, the project scripts, and the entire
+> `/usr/local/etc/synology-letsencrypt/` directory, including your configuration
+> (`lego.yml`, `lego.env`) and lego's storage (the ACME account and every issued
+> certificate). It does not remove certificates already installed in DSM; the
+> script reminds you to delete those manually under Control Panel -> Security ->
+> Certificate.
 
 ## Consider the [acme-dns](https://github.com/joohoi/acme-dns) project
 

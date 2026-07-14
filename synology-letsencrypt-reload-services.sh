@@ -1,15 +1,14 @@
-#!/bin/bash -e
+#!/bin/bash
+set -euo pipefail
+
+# Reload services assigned to the certificate with the key `cert_id` in the INFO file.
 
 [[ $EUID == 0 ]] || { echo >&2 "This script must be run as root"; exit 1; }
 
-# Reload services assigned to the certificate with the key `cert_id` in the INFO file.
-# Inspired by https://github.com/bartowl/synology-stuff/blob/master/reload-certs.sh
-
-CERT_ID="$1"
+CERT_ID="${1:?usage: $0 <cert_id>}"
 
 ARCHIVE_PATH="/usr/syno/etc/certificate/_archive"
 INFO="$ARCHIVE_PATH/INFO"
-
 
 get() {
     local i="$1" prop="$2"
@@ -18,6 +17,7 @@ get() {
 
 find_exec_path() {
     local subscriber="$1"
+    local base script
 
     # search DSM6 and DSM7 paths
     for base in /usr/libexec/certificate.d /usr/local/libexec/certificate.d \
@@ -29,10 +29,12 @@ find_exec_path() {
             break
         fi
     done
+    return 0  # empty output means "not found"; caller handles it
 }
 
 find_cert_path() {
     local subscriber="$1" service="$2"
+    local base dir
 
     for base in /usr/local/etc/certificate /usr/syno/etc/certificate; do
         dir="$base/$subscriber/$service"
@@ -41,9 +43,12 @@ find_cert_path() {
             break
         fi
     done
+    return 0
 }
 
 reload_services() {
+    local services_length i subscriber service cert_path exec_path profile_exec_script profile_exec_path
+
     services_length=$(jq -r --arg cert_id "$CERT_ID" '.[$cert_id].services|length' "$INFO")
 
     for (( i = 0; i < services_length; i++ )); do
