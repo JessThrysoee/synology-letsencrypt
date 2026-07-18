@@ -44,7 +44,7 @@ challenges:
       envFile: /usr/local/etc/synology-letsencrypt/lego.env
 
 certificates:
-  example.com:  # name for this certificate (lego names its cert files after it); use your main domain
+  "example.com":  # name for this certificate (lego names its cert files after it); use your main domain
     challenge: simply
     domains:
       - example.com
@@ -80,13 +80,13 @@ To maintain more than one certificate on your Synology, add another entry under 
 
 ```yaml
 certificates:
-  example.com:
+  "example.com":
     challenge: simply
     domains:
       - example.com
       - "*.example.com"
 
-  other-example.com:
+  "other-example.com":
     challenge: simply
     domains:
       - other-example.com

@@ -110,7 +110,7 @@ challenges:
       envFile: /usr/local/etc/synology-letsencrypt/lego.env
 
 certificates:
-  example.com:  # name for this certificate (lego names its cert files after it); use your main domain
+  "example.com":  # name for this certificate (lego names its cert files after it); use your main domain
     challenge: simply
     domains:
       - example.com
